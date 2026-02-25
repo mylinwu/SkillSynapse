@@ -6,6 +6,38 @@ interface MarkdownViewProps {
 	fontFamily?: string;
 }
 
+const ALLOWED_LINK_PROTOCOLS = new Set(["http:", "https:", "mailto:"]);
+
+const getSafeLinkProps = (
+	href?: string,
+): Pick<
+	React.AnchorHTMLAttributes<HTMLAnchorElement>,
+	"href" | "target" | "rel"
+> => {
+	if (!href) {
+		return { href: "#" };
+	}
+
+	try {
+		const url = new URL(href, "https://placeholder.local");
+		if (!ALLOWED_LINK_PROTOCOLS.has(url.protocol)) {
+			return { href: "#" };
+		}
+
+		if (url.protocol === "mailto:") {
+			return { href };
+		}
+
+		return {
+			href,
+			target: "_blank",
+			rel: "noopener noreferrer nofollow",
+		};
+	} catch {
+		return { href: "#" };
+	}
+};
+
 const MarkdownView: React.FC<MarkdownViewProps> = ({ content, fontFamily }) => {
 	return (
 		<div
@@ -50,16 +82,19 @@ const MarkdownView: React.FC<MarkdownViewProps> = ({ content, fontFamily }) => {
 							{...props}
 						/>
 					),
-					li: ({ ...props }) => <li className="ss-md-li pl-1 leading-7" {...props} />,
+					li: ({ ...props }) => (
+						<li className="ss-md-li pl-1 leading-7" {...props} />
+					),
 					blockquote: ({ ...props }) => (
 						<blockquote
 							className="ss-md-blockquote border-l-4 border-stone-300 dark:border-stone-700 pl-4 italic my-6 text-stone-500 dark:text-stone-400"
 							{...props}
 						/>
 					),
-					a: ({ ...props }) => (
+					a: ({ href, ...props }) => (
 						<a
 							className="ss-md-a text-stone-500 dark:text-[#a8a29e] underline underline-offset-4 decoration-stone-300 dark:decoration-stone-600 hover:text-stone-900 dark:hover:text-white hover:decoration-stone-900 dark:hover:decoration-white transition-colors"
+							{...getSafeLinkProps(href)}
 							{...props}
 						/>
 					),
