@@ -23,6 +23,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 	const [apiKey, setApiKey] = useState(settings.apiKey);
 	const [model, setModel] = useState(settings.model);
 	const [fontFamily, setFontFamily] = useState(settings.fontFamily);
+	const [customCss, setCustomCss] = useState(settings.customCss);
 	const [searchQuery, setSearchQuery] = useState("");
 	const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 	const [availableModels, setAvailableModels] = useState(DEFAULT_MODELS);
@@ -59,12 +60,18 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 		setApiKey(settings.apiKey);
 		setModel(settings.model);
 		setFontFamily(settings.fontFamily);
+		setCustomCss(settings.customCss);
 	}, [settings]);
 
 	if (!isOpen) return null;
 
 	const handleSave = () => {
-		onSave({ apiKey, model, fontFamily: fontFamily.trim() || settings.fontFamily });
+		onSave({
+			apiKey,
+			model,
+			fontFamily: fontFamily.trim() || settings.fontFamily,
+			customCss: customCss.trim() || settings.customCss,
+		});
 		onClose();
 	};
 
@@ -246,6 +253,21 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 						/>
 						<p className="text-xs text-stone-500">
 							支持 CSS font-family 格式，多种字体请用逗号分隔。
+						</p>
+					</div>
+
+					<div className="space-y-3">
+						<label className="block text-sm font-medium text-stone-700">
+							报告自定义 CSS
+						</label>
+						<textarea
+							value={customCss}
+							onChange={(e) => setCustomCss(e.target.value)}
+							className="w-full bg-stone-50 border border-stone-200 focus:border-stone-400 rounded-xl px-4 py-3 text-sm text-stone-900 placeholder-stone-400 focus:outline-none transition-all shadow-sm min-h-56 font-mono"
+							spellCheck={false}
+						/>
+						<p className="text-xs text-stone-500">
+							可覆盖报告区域的预设 class，留空时将回退默认模板。
 						</p>
 					</div>
 

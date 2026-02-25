@@ -1,4 +1,4 @@
-import { Settings as SettingsIcon } from "lucide-react";
+import { Github, Settings as SettingsIcon } from "lucide-react";
 import type React from "react";
 
 interface HeaderProps {
@@ -35,6 +35,17 @@ const Header: React.FC<HeaderProps> = ({ toggleSidebar, onOpenSettings }) => {
 			</div>
 
 			<div className="flex items-center gap-2">
+				{/* GitHub Link */}
+				<a
+					href="https://github.com/mylinwu/SkillSynapse"
+					target="_blank"
+					rel="noopener noreferrer"
+					className="p-2 rounded-lg text-stone-500 hover:bg-stone-100 hover:text-stone-800 transition-colors shrink-0"
+					title="GitHub 仓库"
+				>
+					<Github className="h-5 w-5" />
+				</a>
+				
 				{/* Settings Toggle Button */}
 				<button
 					onClick={onOpenSettings}

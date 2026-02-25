@@ -4,13 +4,57 @@ export interface Settings {
 	apiKey: string;
 	model: string;
 	fontFamily: string;
+	customCss: string;
 }
+
+const DEFAULT_REPORT_CUSTOM_CSS = `.ss-report-root {}
+
+.ss-report-content {}
+
+.ss-report-header {}
+
+.ss-report-title {}
+
+.ss-report-skill-tag {}
+
+.ss-report-repo-link {}
+
+.ss-report-timestamp {}
+
+.ss-markdown-root {}
+
+.ss-md-h1 {}
+
+.ss-md-h2 {}
+
+.ss-md-h3 {}
+
+.ss-md-p {}
+
+.ss-md-ul {}
+
+.ss-md-ol {}
+
+.ss-md-li {}
+
+.ss-md-blockquote {}
+
+.ss-md-a {}
+
+.ss-md-pre-wrap {}
+
+.ss-md-pre {}
+
+.ss-md-code-inline {}
+
+.ss-md-code-block {}`;
 
 export function useSettings() {
 	const [settings, setSettings] = useState<Settings>({
 		apiKey: "",
 		model: "",
 		fontFamily: 'ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"',
+		customCss: DEFAULT_REPORT_CUSTOM_CSS,
 	});
 
 	const [isLoaded, setIsLoaded] = useState(false);
@@ -20,6 +64,7 @@ export function useSettings() {
 		const savedApiKey = localStorage.getItem("skill_synapse_api_key");
 		const savedModel = localStorage.getItem("skill_synapse_model");
 		const savedFontFamily = localStorage.getItem("skill_synapse_font_family");
+		const savedCustomCss = localStorage.getItem("skill_synapse_custom_css");
 
 		const defaultModel =
 			process.env.NEXT_PUBLIC_DEFAULT_AI_MODEL || "openrouter/free";
@@ -29,6 +74,7 @@ export function useSettings() {
 			apiKey: savedApiKey || process.env.NEXT_PUBLIC_DEFAULT_API_KEY || "",
 			model: savedModel || defaultModel,
 			fontFamily: savedFontFamily || defaultFontFamily,
+			customCss: savedCustomCss || DEFAULT_REPORT_CUSTOM_CSS,
 		};
 
 		// Use a small timeout to avoid synchronous setState warning in effect
@@ -54,6 +100,10 @@ export function useSettings() {
 
 		if (newSettings.model !== undefined) {
 			localStorage.setItem("skill_synapse_model", newSettings.model);
+		}
+
+		if (newSettings.customCss !== undefined) {
+			localStorage.setItem("skill_synapse_custom_css", newSettings.customCss);
 		}
 	};
 
