@@ -1,0 +1,252 @@
+import { Check, Settings as SettingsIcon, X } from "lucide-react";
+import type React from "react";
+import { useEffect, useState } from "react";
+import type { Settings } from "../hooks/useSettings";
+
+interface SettingsModalProps {
+	isOpen: boolean;
+	onClose: () => void;
+	settings: Settings;
+	onSave: (settings: Partial<Settings>) => void;
+}
+
+const DEFAULT_MODELS = [
+	{ id: "openrouter/free", name: "OpenrouterFree", provider: "OpenAI" },
+];
+
+export const SettingsModal: React.FC<SettingsModalProps> = ({
+	isOpen,
+	onClose,
+	settings,
+	onSave,
+}) => {
+	const [apiKey, setApiKey] = useState(settings.apiKey);
+	const [model, setModel] = useState(settings.model);
+	const [searchQuery, setSearchQuery] = useState("");
+	const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+	const [availableModels, setAvailableModels] = useState(DEFAULT_MODELS);
+	const [isLoadingModels, setIsLoadingModels] = useState(false);
+
+	useEffect(() => {
+		const fetchModels = async () => {
+			setIsLoadingModels(true);
+			try {
+				const response = await fetch("https://openrouter.ai/api/v1/models");
+				const data = await response.json();
+				if (data?.data) {
+					const models = data.data.map((m: any) => ({
+						id: m.id,
+						name: m.name,
+						provider:
+							m.architecture?.provider || m.id.split("/")[0] || "Unknown",
+					}));
+					setAvailableModels(models);
+				}
+			} catch (error) {
+				console.error("Failed to fetch models:", error);
+			} finally {
+				setIsLoadingModels(false);
+			}
+		};
+
+		if (isOpen && availableModels.length === DEFAULT_MODELS.length) {
+			fetchModels();
+		}
+	}, [isOpen, availableModels.length]);
+
+	useEffect(() => {
+		setApiKey(settings.apiKey);
+		setModel(settings.model);
+	}, [settings]);
+
+	if (!isOpen) return null;
+
+	const handleSave = () => {
+		onSave({ apiKey, model });
+		onClose();
+	};
+
+	const filteredModels = availableModels.filter(
+		(m: { id: string; name: string; provider: string }) =>
+			m.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+			m.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+			m.provider.toLowerCase().includes(searchQuery.toLowerCase()),
+	);
+
+	const selectedModelInfo = availableModels.find(
+		(m: { id: string; name: string; provider: string }) => m.id === model,
+	) || {
+		id: model,
+		name: model,
+		provider: "Custom",
+	};
+
+	return (
+		<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+			<div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl flex flex-col h-[600px] max-h-[85vh] relative overflow-visible">
+				<div className="flex items-center justify-between p-6 border-b border-stone-100">
+					<div className="flex items-center gap-3">
+						<div className="p-2 bg-stone-100 rounded-lg">
+							<SettingsIcon className="w-5 h-5 text-stone-600" />
+						</div>
+						<h2 className="text-xl font-semibold text-stone-800">设置</h2>
+					</div>
+					<button
+						onClick={onClose}
+						className="p-2 rounded-lg text-stone-400 hover:text-stone-600 hover:bg-stone-100 transition-colors"
+					>
+						<X className="w-5 h-5" />
+					</button>
+				</div>
+
+				<div className="p-8 flex-1 overflow-y-auto space-y-8 custom-scrollbar">
+					<div className="space-y-3">
+						<label className="block text-sm font-medium text-stone-700">
+							OpenRouter API Key
+						</label>
+						<input
+							type="password"
+							value={apiKey}
+							onChange={(e) => setApiKey(e.target.value)}
+							placeholder="sk-or-v1-..."
+							className="w-full bg-stone-50 border border-stone-200 focus:border-stone-400 rounded-xl px-4 py-3 text-sm text-stone-900 placeholder-stone-400 focus:outline-none transition-all shadow-sm"
+						/>
+						<p className="text-xs text-stone-500">
+							您的 API Key 将只保存在本地浏览器中，不会上传到服务器。
+						</p>
+					</div>
+
+					<div className="space-y-3 relative">
+						<label className="block text-sm font-medium text-stone-700">
+							AI 模型选择
+						</label>
+
+						<div className="relative">
+							<button
+								type="button"
+								onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+								className="w-full flex items-center justify-between bg-stone-50 border border-stone-200 focus:border-stone-400 rounded-xl px-4 py-3 text-sm text-stone-900 transition-all text-left shadow-sm hover:bg-stone-100"
+							>
+								<div className="flex flex-col">
+									<span className="font-medium text-base">
+										{selectedModelInfo.name}
+									</span>
+									<span className="text-xs text-stone-500 mt-0.5">
+										{selectedModelInfo.id}
+									</span>
+								</div>
+								<span
+									className={`text-stone-400 transition-transform ${isDropdownOpen ? "rotate-180" : ""}`}
+								>
+									▼
+								</span>
+							</button>
+
+							{isDropdownOpen && (
+								<>
+									<div
+										className="fixed inset-0 z-40"
+										onClick={() => setIsDropdownOpen(false)}
+									/>
+									<div className="absolute top-[calc(100%+8px)] left-0 right-0 bg-white border border-stone-200 rounded-xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.1)] z-50 flex flex-col h-[300px]">
+										<div className="p-3 border-b border-stone-100 bg-stone-50 rounded-t-xl">
+											<input
+												type="text"
+												placeholder="搜索模型..."
+												value={searchQuery}
+												onChange={(e) => setSearchQuery(e.target.value)}
+												className="w-full bg-white border border-stone-200 rounded-lg px-4 py-2.5 text-sm text-stone-900 focus:outline-none focus:border-stone-400 shadow-sm"
+												onClick={(e) => e.stopPropagation()}
+											/>
+										</div>
+										<div className="overflow-y-auto flex-1 p-2 custom-scrollbar">
+											{isLoadingModels ? (
+												<div className="p-6 text-center text-sm text-stone-500 flex flex-col items-center justify-center gap-3 h-full">
+													<div className="w-6 h-6 border-2 border-stone-200 border-t-stone-800 rounded-full animate-spin" />
+													正在加载模型列表...
+												</div>
+											) : filteredModels.length > 0 ? (
+												filteredModels.map(
+													(m: {
+														id: string;
+														name: string;
+														provider: string;
+													}) => (
+														<button
+															key={m.id}
+															className={
+																"w-full text-left px-4 py-3 rounded-lg flex items-center justify-between hover:bg-stone-50 transition-colors mb-1 " +
+																(m.id === model ? "bg-stone-100" : "")
+															}
+															onClick={() => {
+																setModel(m.id);
+																setIsDropdownOpen(false);
+																setSearchQuery("");
+															}}
+														>
+															<div>
+																<div className="text-sm font-medium text-stone-900">
+																	{m.name}
+																</div>
+																<div className="text-xs text-stone-500 flex items-center gap-1.5 mt-1">
+																	<span className="px-1.5 py-0.5 bg-stone-100 rounded text-[10px] font-medium">
+																		{m.provider}
+																	</span>
+																	{m.id}
+																</div>
+															</div>
+															{m.id === model && (
+																<Check className="w-5 h-5 text-stone-800" />
+															)}
+														</button>
+													),
+												)
+											) : (
+												<div className="p-6 text-center text-sm text-stone-500 flex items-center justify-center h-full">
+													未找到匹配的模型
+												</div>
+											)}
+
+											{searchQuery &&
+												!filteredModels.find(
+													(m: { id: string; name: string; provider: string }) =>
+														m.id === searchQuery,
+												) && (
+													<button
+														className="w-full text-left px-4 py-3 mt-2 border border-stone-200 rounded-lg hover:bg-stone-50 transition-colors"
+														onClick={() => {
+															setModel(searchQuery);
+															setIsDropdownOpen(false);
+														}}
+													>
+														<div className="text-sm font-medium text-blue-600">
+															使用自定义模型 ID: "{searchQuery}"
+														</div>
+													</button>
+												)}
+										</div>
+									</div>
+								</>
+							)}
+						</div>
+					</div>
+				</div>
+
+				<div className="p-5 border-t border-stone-100 bg-stone-50/50 rounded-b-2xl flex justify-end gap-3">
+					<button
+						onClick={onClose}
+						className="px-6 py-2.5 text-sm font-medium text-stone-600 hover:bg-stone-200 rounded-xl transition-colors"
+					>
+						取消
+					</button>
+					<button
+						onClick={handleSave}
+						className="px-6 py-2.5 text-sm font-medium bg-stone-900 text-white hover:bg-stone-800 rounded-xl transition-colors shadow-sm"
+					>
+						保存设置
+					</button>
+				</div>
+			</div>
+		</div>
+	);
+};
