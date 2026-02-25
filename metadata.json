@@ -1,0 +1,5 @@
+{
+  "name": "SkillSynapse",
+  "description": "A sophisticated tool to analyze GitHub-based Skills and repositories using AI. It fetches repository context, analyzes utility, usage, and structure, and generates comprehensive cached reports.",
+  "requestFramePermissions": []
+}
