@@ -9,12 +9,18 @@ import HistorySidebar from "../components/HistorySidebar";
 import LoadingState from "../components/LoadingState";
 import ReportContainer from "../components/ReportContainer";
 import { SettingsModal } from "../components/SettingsModal";
+import { SkillSelectorModal } from "../components/SkillSelectorModal";
 // Hooks
 import { useHistory } from "../hooks/useHistory";
 import { useHotSkills } from "../hooks/useHotSkills";
 import { useSettings } from "../hooks/useSettings";
 import { generateSkillAnalysis } from "../services/aiService";
 import { fetchRepoContext, parseGitHubUrl } from "../services/githubService";
+import {
+	type DiscoveredSkill,
+	fetchRepoSkills,
+	resolveSkillPathForHotItem,
+} from "../services/skillService";
 import type { AnalysisReport } from "../types";
 
 // Helper to generate IDs
@@ -36,14 +42,30 @@ export default function Home() {
 	const [isProcessing, setIsProcessing] = useState(false);
 	const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 	const [mounted, setMounted] = useState(false);
+	const [isSkillSelectorOpen, setIsSkillSelectorOpen] = useState(false);
+	const [discoveredSkills, setDiscoveredSkills] = useState<DiscoveredSkill[]>(
+		[],
+	);
+	const [isFetchingSkills, setIsFetchingSkills] = useState(false);
+	const [pendingAnalyzeUrl, setPendingAnalyzeUrl] = useState<string | null>(
+		null,
+	);
 
 	useEffect(() => {
 		setMounted(true);
 	}, []);
 
-	const handleAnalyze = async (urlOverride?: string) => {
+	const handleAnalyze = async (
+		urlOverride?: string,
+		skillOverride?: string,
+	) => {
 		const targetUrl = urlOverride || inputUrl;
-		const targetSkill = urlOverride ? undefined : inputSkillName;
+		let targetSkill =
+			skillOverride !== undefined
+				? skillOverride
+				: urlOverride
+					? undefined
+					: inputSkillName;
 
 		if (!targetUrl.trim()) return;
 
@@ -52,6 +74,71 @@ export default function Home() {
 			alert("请输入有效的 GitHub URL (例如: https://github.com/owner/repo)");
 			return;
 		}
+
+		if (urlOverride && skillOverride) {
+			setIsFetchingSkills(true);
+			try {
+				const resolved = await resolveSkillPathForHotItem(
+					targetUrl,
+					skillOverride,
+				);
+				if (!resolved.hasMultipleSkills) {
+					executeAnalysis(targetUrl);
+					return;
+				}
+
+				if (resolved.matchedSkillPath) {
+					executeAnalysis(targetUrl, resolved.matchedSkillPath);
+					return;
+				}
+
+				setDiscoveredSkills(resolved.skills);
+				setPendingAnalyzeUrl(targetUrl);
+				setIsSkillSelectorOpen(true);
+				return;
+			} catch (error) {
+				console.error("Failed to resolve hot skill path:", error);
+				executeAnalysis(targetUrl);
+				return;
+			} finally {
+				setIsFetchingSkills(false);
+			}
+		}
+
+		// 如果没有明确指定 skill，并且不是通过热门列表直接点击进来的(或者即使是，也想确认)
+		// 我们先尝试获取该仓库下的所有 skills
+		if (!targetSkill && !urlOverride) {
+			setIsFetchingSkills(true);
+			setIsSkillSelectorOpen(true);
+			setPendingAnalyzeUrl(targetUrl);
+			try {
+				const skills = await fetchRepoSkills(targetUrl);
+				setDiscoveredSkills(skills);
+				// 如果只有一个 skill，可以直接开始分析
+				if (skills.length === 1) {
+					setIsSkillSelectorOpen(false);
+					targetSkill = skills[0].path;
+				} else {
+					// 让用户选择
+					setIsFetchingSkills(false);
+					return;
+				}
+			} catch (error) {
+				console.error("Failed to fetch skills:", error);
+				// 获取失败时，可以回退到直接分析根目录
+				setIsSkillSelectorOpen(false);
+				setPendingAnalyzeUrl(null);
+			} finally {
+				setIsFetchingSkills(false);
+			}
+		}
+
+		executeAnalysis(targetUrl, targetSkill);
+	};
+
+	const executeAnalysis = async (targetUrl: string, targetSkill?: string) => {
+		const parsed = parseGitHubUrl(targetUrl);
+		if (!parsed) return;
 
 		const { owner, repo } = parsed;
 		const newId = generateId();
@@ -70,7 +157,8 @@ export default function Home() {
 		addReport(newReport);
 		setCurrentReportId(newId);
 
-		if (!urlOverride) {
+		// 如果不是通过 override 传进来的，清空输入框
+		if (targetUrl === inputUrl) {
 			setInputUrl("");
 			setInputSkillName("");
 		}
@@ -176,6 +264,21 @@ export default function Home() {
 				onClose={() => setIsSettingsOpen(false)}
 				settings={settings}
 				onSave={updateSettings}
+			/>
+
+			<SkillSelectorModal
+				isOpen={isSkillSelectorOpen}
+				onClose={() => {
+					setIsSkillSelectorOpen(false);
+					setPendingAnalyzeUrl(null);
+				}}
+				skills={discoveredSkills}
+				isLoading={isFetchingSkills}
+				onSelect={(skillPath) => {
+					setIsSkillSelectorOpen(false);
+					executeAnalysis(pendingAnalyzeUrl || inputUrl, skillPath);
+					setPendingAnalyzeUrl(null);
+				}}
 			/>
 		</div>
 	);

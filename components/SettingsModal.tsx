@@ -22,6 +22,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 }) => {
 	const [apiKey, setApiKey] = useState(settings.apiKey);
 	const [model, setModel] = useState(settings.model);
+	const [fontFamily, setFontFamily] = useState(settings.fontFamily);
 	const [searchQuery, setSearchQuery] = useState("");
 	const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 	const [availableModels, setAvailableModels] = useState(DEFAULT_MODELS);
@@ -57,12 +58,13 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 	useEffect(() => {
 		setApiKey(settings.apiKey);
 		setModel(settings.model);
+		setFontFamily(settings.fontFamily);
 	}, [settings]);
 
 	if (!isOpen) return null;
 
 	const handleSave = () => {
-		onSave({ apiKey, model });
+		onSave({ apiKey, model, fontFamily: fontFamily.trim() || settings.fontFamily });
 		onClose();
 	};
 
@@ -83,7 +85,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
 	return (
 		<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-			<div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl flex flex-col h-[600px] max-h-[85vh] relative overflow-visible">
+			<div className="bg-white rounded-2xl shadow-2xl w-full max-w-[80vw] flex flex-col h-[80vh] max-h-[85vh] relative overflow-visible">
 				<div className="flex items-center justify-between p-6 border-b border-stone-100">
 					<div className="flex items-center gap-3">
 						<div className="p-2 bg-stone-100 rounded-lg">
@@ -148,7 +150,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 										className="fixed inset-0 z-40"
 										onClick={() => setIsDropdownOpen(false)}
 									/>
-									<div className="absolute top-[calc(100%+8px)] left-0 right-0 bg-white border border-stone-200 rounded-xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.1)] z-50 flex flex-col h-[300px]">
+									<div className="absolute top-[calc(100%+8px)] left-0 right-0 bg-white border border-stone-200 rounded-xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.05)] z-50 flex flex-col h-[300px]">
 										<div className="p-3 border-b border-stone-100 bg-stone-50 rounded-t-xl">
 											<input
 												type="text"
@@ -230,6 +232,23 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 							)}
 						</div>
 					</div>
+
+					<div className="space-y-3">
+						<label className="block text-sm font-medium text-stone-700">
+							报告字体设置
+						</label>
+						<input
+							type="text"
+							value={fontFamily}
+							onChange={(e) => setFontFamily(e.target.value)}
+							placeholder='例如: "Microsoft YaHei", sans-serif'
+							className="w-full bg-stone-50 border border-stone-200 focus:border-stone-400 rounded-xl px-4 py-3 text-sm text-stone-900 placeholder-stone-400 focus:outline-none transition-all shadow-sm"
+						/>
+						<p className="text-xs text-stone-500">
+							支持 CSS font-family 格式，多种字体请用逗号分隔。
+						</p>
+					</div>
+
 				</div>
 
 				<div className="p-5 border-t border-stone-100 bg-stone-50/50 rounded-b-2xl flex justify-end gap-3">

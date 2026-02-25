@@ -1,4 +1,5 @@
 import type React from "react";
+import { useSettings } from "../hooks/useSettings";
 import type { AnalysisReport } from "../types";
 import MarkdownView from "./MarkdownView";
 
@@ -7,6 +8,8 @@ interface ReportContainerProps {
 }
 
 const ReportContainer: React.FC<ReportContainerProps> = ({ report }) => {
+	const { settings } = useSettings();
+
 	return (
 		<div className="h-full w-full overflow-y-auto px-4 md:px-8 py-6 scroll-smooth">
 			<div className="max-w-3xl mx-auto pb-24 pt-4">
@@ -35,7 +38,7 @@ const ReportContainer: React.FC<ReportContainerProps> = ({ report }) => {
 						{new Date(report.timestamp).toLocaleDateString()}
 					</div>
 				</div>
-				<MarkdownView content={report.markdown} />
+				<MarkdownView content={report.markdown} fontFamily={settings.fontFamily} />
 			</div>
 		</div>
 	);

@@ -10,7 +10,7 @@ interface DashboardProps {
 	hotSkills: SkillFeedItem[];
 	isLoadingSkills: boolean;
 	onRefreshSkills: () => void;
-	onAnalyze: (url: string) => void;
+	onAnalyze: (url: string, skillName?: string) => void;
 	inputUrl: string;
 	setInputUrl: (val: string) => void;
 	inputSkillName: string;
@@ -22,7 +22,7 @@ interface DashboardProps {
 interface CellData {
 	items: SkillFeedItem[];
 	columnCount: number;
-	onAnalyze: (url: string) => void;
+	onAnalyze: (url: string, skillName?: string) => void;
 }
 
 type CellComponentProps = {
@@ -55,8 +55,9 @@ const Cell = ({
 	return (
 		<div style={style} className="p-1.5" {...ariaAttributes}>
 			<button
-				onClick={() => onAnalyze(skill.url)}
-				className="group w-full h-full flex flex-col text-left p-3 bg-white hover:bg-stone-50 border border-stone-200 rounded-xl transition-all shadow-sm hover:shadow-md active:scale-[0.98]"
+				type="button"
+				onClick={() => onAnalyze(skill.url, skill.name)}
+				className="group w-full h-full flex flex-col text-left p-2 bg-white hover:bg-stone-50 border border-stone-200 rounded-xl transition-all shadow-sm hover:shadow-md active:scale-[0.98]"
 			>
 				<div className="flex items-center justify-between w-full mb-1">
 					<h4 className="font-semibold text-sm text-stone-800 truncate pr-2 group-hover:text-blue-600 transition-colors">
@@ -87,17 +88,32 @@ const Dashboard: React.FC<DashboardProps> = ({
 		<div className="flex flex-col h-full w-full max-w-4xl mx-auto px-4 md:px-8 py-10">
 			<div className="flex-1 flex flex-col justify-center items-center">
 				<h2 className="text-3xl font-semibold text-stone-800 mb-8">
-					有什么可以帮忙的？
+					需要我帮忙分析什么 Skills ?
 				</h2>
 
 				<div className="w-full max-w-3xl relative flex flex-col gap-2 bg-[#f4f4f4] rounded-2xl p-3 border border-stone-200/60 shadow-sm focus-within:ring-2 focus-within:ring-stone-200 transition-all">
 					<input
 						type="text"
-						placeholder="输入 GitHub 仓库 URL (例如: owner/repo)"
+						placeholder="输入 Skills 的 GitHub 仓库 URL (例如: owner/repo)"
 						className="w-full bg-transparent border-none text-base text-stone-800 placeholder-stone-400 focus:outline-none focus:ring-0 px-2 py-2"
 						value={inputUrl}
 						onChange={(e) => setInputUrl(e.target.value)}
 						onKeyDown={(e) => e.key === "Enter" && onAnalyzeClick()}
+						onPaste={(e) => {
+							const pastedText = e.clipboardData.getData("text");
+							// 匹配类似: npx skills add https://github.com/microsoft/github-copilot-for-azure --skill azure-deploy
+							const match = pastedText.match(
+								/npx\s+skills\s+add\s+(https?:\/\/[^\s]+)(?:\s+--skill\s+([^\s]+))?/i,
+							);
+							if (match) {
+								e.preventDefault();
+								const [_, url, skillName] = match;
+								setInputUrl(url);
+								if (skillName) {
+									setInputSkillName(skillName);
+								}
+							}
+						}}
 					/>
 
 					<div className="flex items-center justify-between mt-2 px-2">
@@ -112,6 +128,7 @@ const Dashboard: React.FC<DashboardProps> = ({
 						/>
 
 						<button
+							type="button"
 							onClick={onAnalyzeClick}
 							disabled={isProcessing || !inputUrl}
 							className={`p-2 rounded-xl flex items-center justify-center transition-all ${
@@ -131,6 +148,7 @@ const Dashboard: React.FC<DashboardProps> = ({
 				<div className="flex items-center justify-between mb-4 px-2">
 					<h3 className="text-sm font-medium text-stone-600">探索热门 Skill</h3>
 					<button
+						type="button"
 						onClick={onRefreshSkills}
 						disabled={isLoadingSkills}
 						className="flex items-center gap-1.5 text-xs text-stone-500 hover:text-stone-800 transition-colors disabled:opacity-50 font-medium"
@@ -141,6 +159,7 @@ const Dashboard: React.FC<DashboardProps> = ({
 							fill="none"
 							viewBox="0 0 24 24"
 							stroke="currentColor"
+							aria-hidden="true"
 						>
 							<path
 								strokeLinecap="round"
@@ -176,7 +195,7 @@ const Dashboard: React.FC<DashboardProps> = ({
 								const columnCount = getColumnCount(width);
 								const safeWidth = width - 12;
 								const columnWidth = Math.floor(safeWidth / columnCount);
-								const rowHeight = 90;
+								const rowHeight = 72;
 
 								return (
 									<Grid<CellData>

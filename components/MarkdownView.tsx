@@ -3,11 +3,15 @@ import ReactMarkdown from "react-markdown";
 
 interface MarkdownViewProps {
 	content: string;
+	fontFamily?: string;
 }
 
-const MarkdownView: React.FC<MarkdownViewProps> = ({ content }) => {
+const MarkdownView: React.FC<MarkdownViewProps> = ({ content, fontFamily }) => {
 	return (
-		<div className="font-serif leading-relaxed text-stone-800 dark:text-[#e7e5e4] max-w-none">
+		<div
+			className="font-serif leading-relaxed text-stone-800 dark:text-[#e7e5e4] max-w-none"
+			style={fontFamily ? { fontFamily } : undefined}
+		>
 			<ReactMarkdown
 				components={{
 					h1: ({ ...props }) => (

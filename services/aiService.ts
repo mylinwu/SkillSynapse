@@ -86,7 +86,7 @@ ${context.packageJson || "不可用"}
 			model: openrouter(
 				modelName ||
 					process.env.NEXT_PUBLIC_DEFAULT_AI_MODEL ||
-					"google/gemini-2.5-pro",
+					"openrouter/free",
 			),
 			system:
 				"你是一个精确、专业的技术分析师。请严格按照用户的模板输出 Markdown 报告，不要添加任何开场白或结束语。使用中文。直接输出最终报告内容，不要输出思考过程。",

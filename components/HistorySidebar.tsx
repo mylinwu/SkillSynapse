@@ -93,12 +93,6 @@ const HistorySidebar: React.FC<HistorySidebarProps> = ({
 							</button>
 						))}
 					</div>
-
-					<div className="py-4 px-2">
-						<div className="text-xs text-stone-400 font-mono">
-							Powered by Gemini 2.0
-						</div>
-					</div>
 				</div>
 			</aside>
 		</>
