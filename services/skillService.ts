@@ -3,6 +3,18 @@ import { parseGitHubUrl } from "./githubService";
 
 const GITHUB_API_BASE = "https://api.github.com";
 
+const buildGitHubHeaders = (githubToken?: string): HeadersInit => {
+	const headers: HeadersInit = {
+		Accept: "application/vnd.github.v3+json",
+	};
+
+	if (githubToken?.trim()) {
+		headers.Authorization = `Bearer ${githubToken.trim()}`;
+	}
+
+	return headers;
+};
+
 export interface DiscoveredSkill {
 	name: string;
 	path: string;
@@ -53,6 +65,7 @@ const tryMatchSkillByHotName = (
  */
 export const fetchRepoSkills = async (
 	url: string,
+	githubToken?: string,
 ): Promise<DiscoveredSkill[]> => {
 	const parsed = parseGitHubUrl(url);
 	if (!parsed) {
@@ -60,9 +73,7 @@ export const fetchRepoSkills = async (
 	}
 
 	const { owner, repo } = parsed;
-	const headers = {
-		Accept: "application/vnd.github.v3+json",
-	};
+	const headers = buildGitHubHeaders(githubToken);
 
 	try {
 		// 1. 获取默认分支
@@ -70,6 +81,13 @@ export const fetchRepoSkills = async (
 			headers,
 		});
 		if (!repoRes.ok) {
+			if (repoRes.status === 403) {
+				throw new Error(
+					githubToken
+						? "GitHub API rate limit exceeded for this token. Please try another token later."
+						: "GitHub API rate limit exceeded. Please add a GitHub Token in Settings, then retry.",
+				);
+			}
 			throw new Error("Failed to fetch repository info");
 		}
 		const repoJson = await repoRes.json();
@@ -81,6 +99,13 @@ export const fetchRepoSkills = async (
 			{ headers },
 		);
 		if (!treeRes.ok) {
+			if (treeRes.status === 403) {
+				throw new Error(
+					githubToken
+						? "GitHub API rate limit exceeded for this token. Please try another token later."
+						: "GitHub API rate limit exceeded. Please add a GitHub Token in Settings, then retry.",
+				);
+			}
 			throw new Error("Failed to fetch repository tree");
 		}
 		const treeJson = await treeRes.json();
@@ -147,8 +172,9 @@ export const fetchRepoSkills = async (
 export const resolveSkillPathForHotItem = async (
 	repoUrl: string,
 	hotSkillName: string,
+	githubToken?: string,
 ): Promise<HotSkillResolutionResult> => {
-	const skills = await fetchRepoSkills(repoUrl);
+	const skills = await fetchRepoSkills(repoUrl, githubToken);
 	if (skills.length <= 1) {
 		return {
 			matchedSkillPath: undefined,

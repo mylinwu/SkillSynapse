@@ -127,10 +127,9 @@ export const fetchRepoContext = async (
 	owner: string,
 	repo: string,
 	skillName?: string,
+	githubToken?: string,
 ): Promise<RepoContext> => {
-	const headers = {
-		Accept: "application/vnd.github.v3+json",
-	};
+	const headers = buildGitHubHeaders(githubToken);
 
 	// 1. Get Repo Info
 	const repoRes = await fetch(`${GITHUB_API_BASE}/repos/${owner}/${repo}`, {
@@ -141,7 +140,9 @@ export const fetchRepoContext = async (
 			throw new Error("Repository not found or private.");
 		if (repoRes.status === 403)
 			throw new Error(
-				"GitHub API rate limit exceeded. Please try again later.",
+				githubToken
+					? "GitHub API rate limit exceeded for this token. Please try again later or switch token."
+					: "GitHub API rate limit exceeded. Please add a GitHub Token in Settings, then retry.",
 			);
 		throw new Error(`GitHub API Error: ${repoRes.statusText}`);
 	}
@@ -249,7 +250,7 @@ export const fetchRepoContext = async (
 	}
 
 	// 5. Try to get package.json (Context Aware)
-	let packageJson;
+	let packageJson: string | undefined;
 	try {
 		let pkgPath = "contents/package.json";
 		if (targetPath) {
@@ -275,4 +276,15 @@ export const fetchRepoContext = async (
 		packageJson,
 		subPath: targetPath,
 	};
+};
+const buildGitHubHeaders = (githubToken?: string): HeadersInit => {
+	const headers: HeadersInit = {
+		Accept: "application/vnd.github.v3+json",
+	};
+
+	if (githubToken?.trim()) {
+		headers.Authorization = `Bearer ${githubToken.trim()}`;
+	}
+
+	return headers;
 };

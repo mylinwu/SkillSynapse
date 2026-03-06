@@ -21,6 +21,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 	onSave,
 }) => {
 	const [apiKey, setApiKey] = useState(settings.apiKey);
+	const [githubToken, setGitHubToken] = useState(settings.githubToken);
 	const [model, setModel] = useState(settings.model);
 	const [fontFamily, setFontFamily] = useState(settings.fontFamily);
 	const [customCss, setCustomCss] = useState(settings.customCss);
@@ -59,6 +60,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 	useEffect(() => {
 		setApiKey(settings.apiKey);
 		setModel(settings.model);
+		setGitHubToken(settings.githubToken);
 		setFontFamily(settings.fontFamily);
 		setCustomCss(settings.customCss);
 	}, [settings]);
@@ -68,6 +70,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 	const handleSave = () => {
 		onSave({
 			apiKey,
+			githubToken,
 			model,
 			fontFamily: fontFamily.trim() || settings.fontFamily,
 			customCss: customCss.trim() || settings.customCss,
@@ -122,6 +125,23 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 						/>
 						<p className="text-xs text-stone-500">
 							您的 API Key 将只保存在本地浏览器中，不会上传到服务器。
+						</p>
+					</div>
+
+					<div className="space-y-3">
+						<label className="block text-sm font-medium text-stone-700">
+							GitHub Token (可选)
+						</label>
+						<input
+							type="password"
+							value={githubToken}
+							onChange={(e) => setGitHubToken(e.target.value)}
+							placeholder="ghp_xxx 或 github_pat_xxx"
+							className="w-full bg-stone-50 border border-stone-200 focus:border-stone-400 rounded-xl px-4 py-3 text-sm text-stone-900 placeholder-stone-400 focus:outline-none transition-all shadow-sm"
+						/>
+						<p className="text-xs text-stone-500">
+							用于提升 GitHub API 额度（避免 rate
+							limit），同样仅保存在本地浏览器。
 						</p>
 					</div>
 
@@ -270,7 +290,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 							可覆盖报告区域的预设 class，留空时将回退默认模板。
 						</p>
 					</div>
-
 				</div>
 
 				<div className="p-5 border-t border-stone-100 bg-stone-50/50 rounded-b-2xl flex justify-end gap-3">
