@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 
 export interface Settings {
 	apiKey: string;
+	githubToken: string;
 	model: string;
 	fontFamily: string;
 	customCss: string;
@@ -52,8 +53,10 @@ const DEFAULT_REPORT_CUSTOM_CSS = `.ss-report-root {}
 export function useSettings() {
 	const [settings, setSettings] = useState<Settings>({
 		apiKey: "",
+		githubToken: "",
 		model: "",
-		fontFamily: 'ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"',
+		fontFamily:
+			'ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"',
 		customCss: DEFAULT_REPORT_CUSTOM_CSS,
 	});
 
@@ -63,15 +66,19 @@ export function useSettings() {
 		// Load from localStorage on mount
 		const savedApiKey = localStorage.getItem("skill_synapse_api_key");
 		const savedModel = localStorage.getItem("skill_synapse_model");
+		const savedGitHubToken = localStorage.getItem("skill_synapse_github_token");
 		const savedFontFamily = localStorage.getItem("skill_synapse_font_family");
 		const savedCustomCss = localStorage.getItem("skill_synapse_custom_css");
 
 		const defaultModel =
 			process.env.NEXT_PUBLIC_DEFAULT_AI_MODEL || "openrouter/free";
-		const defaultFontFamily = 'ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"';
+		const defaultFontFamily =
+			'ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"';
 
 		const initialSettings = {
 			apiKey: savedApiKey || process.env.NEXT_PUBLIC_DEFAULT_API_KEY || "",
+			githubToken:
+				savedGitHubToken || process.env.NEXT_PUBLIC_DEFAULT_GITHUB_TOKEN || "",
 			model: savedModel || defaultModel,
 			fontFamily: savedFontFamily || defaultFontFamily,
 			customCss: savedCustomCss || DEFAULT_REPORT_CUSTOM_CSS,
@@ -96,6 +103,13 @@ export function useSettings() {
 
 		if (newSettings.fontFamily !== undefined) {
 			localStorage.setItem("skill_synapse_font_family", newSettings.fontFamily);
+		}
+
+		if (newSettings.githubToken !== undefined) {
+			localStorage.setItem(
+				"skill_synapse_github_token",
+				newSettings.githubToken,
+			);
 		}
 
 		if (newSettings.model !== undefined) {

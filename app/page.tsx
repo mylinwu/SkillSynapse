@@ -81,6 +81,7 @@ export default function Home() {
 				const resolved = await resolveSkillPathForHotItem(
 					targetUrl,
 					skillOverride,
+					settings.githubToken,
 				);
 				if (!resolved.hasMultipleSkills) {
 					executeAnalysis(targetUrl);
@@ -112,7 +113,7 @@ export default function Home() {
 			setIsSkillSelectorOpen(true);
 			setPendingAnalyzeUrl(targetUrl);
 			try {
-				const skills = await fetchRepoSkills(targetUrl);
+				const skills = await fetchRepoSkills(targetUrl, settings.githubToken);
 				setDiscoveredSkills(skills);
 				// 如果只有一个 skill，可以直接开始分析
 				if (skills.length === 1) {
@@ -167,7 +168,12 @@ export default function Home() {
 
 		try {
 			// 1. Fetch Repo Context (with optional skillName)
-			const context = await fetchRepoContext(owner, repo, targetSkill);
+			const context = await fetchRepoContext(
+				owner,
+				repo,
+				targetSkill,
+				settings.githubToken,
+			);
 
 			// 2. Generate Analysis with AI using settings
 			const markdown = await generateSkillAnalysis(
