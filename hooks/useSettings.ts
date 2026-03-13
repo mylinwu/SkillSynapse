@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { DEFAULT_ANALYSIS_PROMPT_TEMPLATE } from "../services/promptTemplate";
 
 export interface Settings {
 	apiKey: string;
@@ -6,6 +7,7 @@ export interface Settings {
 	model: string;
 	fontFamily: string;
 	customCss: string;
+	customPrompt: string;
 }
 
 const DEFAULT_REPORT_CUSTOM_CSS = `.ss-report-root {}
@@ -58,6 +60,7 @@ export function useSettings() {
 		fontFamily:
 			'ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"',
 		customCss: DEFAULT_REPORT_CUSTOM_CSS,
+		customPrompt: DEFAULT_ANALYSIS_PROMPT_TEMPLATE,
 	});
 
 	const [isLoaded, setIsLoaded] = useState(false);
@@ -69,6 +72,7 @@ export function useSettings() {
 		const savedGitHubToken = localStorage.getItem("skill_synapse_github_token");
 		const savedFontFamily = localStorage.getItem("skill_synapse_font_family");
 		const savedCustomCss = localStorage.getItem("skill_synapse_custom_css");
+		const savedCustomPrompt = localStorage.getItem("skill_synapse_custom_prompt");
 
 		const defaultModel =
 			process.env.NEXT_PUBLIC_DEFAULT_AI_MODEL || "openrouter/free";
@@ -82,6 +86,7 @@ export function useSettings() {
 			model: savedModel || defaultModel,
 			fontFamily: savedFontFamily || defaultFontFamily,
 			customCss: savedCustomCss || DEFAULT_REPORT_CUSTOM_CSS,
+			customPrompt: savedCustomPrompt || DEFAULT_ANALYSIS_PROMPT_TEMPLATE,
 		};
 
 		// Use a small timeout to avoid synchronous setState warning in effect
@@ -118,6 +123,10 @@ export function useSettings() {
 
 		if (newSettings.customCss !== undefined) {
 			localStorage.setItem("skill_synapse_custom_css", newSettings.customCss);
+		}
+
+		if (newSettings.customPrompt !== undefined) {
+			localStorage.setItem("skill_synapse_custom_prompt", newSettings.customPrompt);
 		}
 	};
 

@@ -180,6 +180,7 @@ export default function Home() {
 				context,
 				settings.apiKey,
 				settings.model,
+				settings.customPrompt,
 			);
 
 			// 3. Update Report
