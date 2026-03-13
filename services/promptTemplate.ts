@@ -58,6 +58,24 @@ export const DEFAULT_ANALYSIS_PROMPT_TEMPLATE = `你是一位资深的软件架�
 [3. 数据流向是怎样的？]
 [请结合提供的文件结构进行解释。]`;
 
+export const ANALYSIS_PROMPT_PLACEHOLDERS = [
+	{ key: "{{repoFullName}}", description: "仓库全名（owner/repo）" },
+	{
+		key: "{{subPathDescription}}",
+		description: "子目录说明（无子目录时为空）",
+	},
+	{ key: "{{repoUrl}}", description: "分析目标的 GitHub 链接" },
+	{ key: "{{description}}", description: "仓库描述" },
+	{ key: "{{scopeLabel}}", description: "分析范围（根目录/子目录范围）" },
+	{ key: "{{structure}}", description: "仓库（或子目录）文件结构" },
+	{ key: "{{readme}}", description: "README 内容（最多截断 15000 字）" },
+	{
+		key: "{{packageJson}}",
+		description: "package.json 内容（无则显示不可用）",
+	},
+	{ key: "{{title}}", description: "报告标题中的技能名" },
+] as const;
+
 interface PromptContext {
 	repoUrl: string;
 	title: string;

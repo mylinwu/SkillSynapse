@@ -15,6 +15,18 @@ const DEFAULT_MODELS = [
 	{ id: "openrouter/free", name: "OpenrouterFree", provider: "OpenAI" },
 ];
 
+interface OpenRouterModel {
+	id: string;
+	name: string;
+	architecture?: {
+		provider?: string;
+	};
+}
+
+interface OpenRouterModelsResponse {
+	data?: OpenRouterModel[];
+}
+
 export const SettingsModal: React.FC<SettingsModalProps> = ({
 	isOpen,
 	onClose,
@@ -39,9 +51,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 			setIsLoadingModels(true);
 			try {
 				const response = await fetch("https://openrouter.ai/api/v1/models");
-				const data = await response.json();
-				if (data?.data) {
-					const models = data.data.map((m: any) => ({
+				const data = (await response.json()) as OpenRouterModelsResponse;
+				if (data.data) {
+					const models = data.data.map((m) => ({
 						id: m.id,
 						name: m.name,
 						provider:
@@ -292,6 +304,44 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 								</>
 							)}
 						</div>
+					</div>
+
+					<div className="space-y-3">
+						<div className="flex items-center justify-between">
+							<label className="block text-sm font-medium text-stone-700">
+								报告分析提示词
+							</label>
+							<button
+								type="button"
+								onClick={() =>
+									setCustomPrompt(DEFAULT_ANALYSIS_PROMPT_TEMPLATE)
+								}
+								className="text-xs font-medium text-stone-600 hover:text-stone-800 underline underline-offset-2"
+							>
+								重置为默认模板
+							</button>
+						</div>
+						<textarea
+							value={customPrompt}
+							onChange={(e) => setCustomPrompt(e.target.value)}
+							placeholder="可使用下方占位符动态注入仓库上下文"
+							className="w-full bg-stone-50 border border-stone-200 focus:border-stone-400 rounded-xl px-4 py-3 text-sm text-stone-900 placeholder-stone-400 focus:outline-none transition-all shadow-sm min-h-56 font-mono"
+							spellCheck={false}
+						/>
+						<div className="rounded-xl border border-stone-200 bg-stone-50 px-3 py-2">
+							<p className="text-xs font-medium text-stone-600">可用占位符</p>
+							<div className="mt-2 grid grid-cols-1 md:grid-cols-2 gap-1.5">
+								{ANALYSIS_PROMPT_PLACEHOLDERS.map((item) => (
+									<div key={item.key} className="text-xs text-stone-600">
+										<code className="font-mono text-stone-800">{item.key}</code>
+										：{item.description}
+									</div>
+								))}
+							</div>
+						</div>
+						<p className="text-xs text-stone-500">
+							默认已内置兜底模板。若清空此项，保存时会自动回退到默认模板。
+						</p>
 					</div>
 
 					<div className="space-y-3">
