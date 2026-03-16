@@ -1,6 +1,10 @@
-import { Check, Settings as SettingsIcon, X } from "lucide-react";
+import { Check, Eye, EyeOff, Settings as SettingsIcon, X } from "lucide-react";
 import type React from "react";
 import { useEffect, useState } from "react";
+import {
+	ANALYSIS_PROMPT_PLACEHOLDERS,
+	DEFAULT_ANALYSIS_PROMPT_TEMPLATE,
+} from "../services/promptTemplate";
 import type { Settings } from "../hooks/useSettings";
 
 interface SettingsModalProps {
@@ -14,6 +18,18 @@ const DEFAULT_MODELS = [
 	{ id: "openrouter/free", name: "OpenrouterFree", provider: "OpenAI" },
 ];
 
+interface OpenRouterModel {
+	id: string;
+	name: string;
+	architecture?: {
+		provider?: string;
+	};
+}
+
+interface OpenRouterModelsResponse {
+	data?: OpenRouterModel[];
+}
+
 export const SettingsModal: React.FC<SettingsModalProps> = ({
 	isOpen,
 	onClose,
@@ -21,10 +37,13 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 	onSave,
 }) => {
 	const [apiKey, setApiKey] = useState(settings.apiKey);
+	const [showApiKey, setShowApiKey] = useState(false);
 	const [githubToken, setGitHubToken] = useState(settings.githubToken);
+	const [showGitHubToken, setShowGitHubToken] = useState(false);
 	const [model, setModel] = useState(settings.model);
 	const [fontFamily, setFontFamily] = useState(settings.fontFamily);
 	const [customCss, setCustomCss] = useState(settings.customCss);
+	const [customPrompt, setCustomPrompt] = useState(settings.customPrompt);
 	const [searchQuery, setSearchQuery] = useState("");
 	const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 	const [availableModels, setAvailableModels] = useState(DEFAULT_MODELS);
@@ -35,9 +54,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 			setIsLoadingModels(true);
 			try {
 				const response = await fetch("https://openrouter.ai/api/v1/models");
-				const data = await response.json();
-				if (data?.data) {
-					const models = data.data.map((m: any) => ({
+				const data = (await response.json()) as OpenRouterModelsResponse;
+				if (data.data) {
+					const models = data.data.map((m) => ({
 						id: m.id,
 						name: m.name,
 						provider:
@@ -63,6 +82,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 		setGitHubToken(settings.githubToken);
 		setFontFamily(settings.fontFamily);
 		setCustomCss(settings.customCss);
+		setCustomPrompt(settings.customPrompt);
 	}, [settings]);
 
 	if (!isOpen) return null;
@@ -74,6 +94,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 			model,
 			fontFamily: fontFamily.trim() || settings.fontFamily,
 			customCss: customCss.trim() || settings.customCss,
+			customPrompt: customPrompt.trim() || DEFAULT_ANALYSIS_PROMPT_TEMPLATE,
 		});
 		onClose();
 	};
@@ -116,13 +137,27 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 						<label className="block text-sm font-medium text-stone-700">
 							OpenRouter API Key
 						</label>
-						<input
-							type="password"
-							value={apiKey}
-							onChange={(e) => setApiKey(e.target.value)}
-							placeholder="sk-or-v1-..."
-							className="w-full bg-stone-50 border border-stone-200 focus:border-stone-400 rounded-xl px-4 py-3 text-sm text-stone-900 placeholder-stone-400 focus:outline-none transition-all shadow-sm"
-						/>
+						<div className="relative">
+							<input
+								type={showApiKey ? "text" : "password"}
+								value={apiKey}
+								onChange={(e) => setApiKey(e.target.value)}
+								placeholder="sk-or-v1-..."
+								className="w-full bg-stone-50 border border-stone-200 focus:border-stone-400 rounded-xl pl-4 pr-12 py-3 text-sm text-stone-900 placeholder-stone-400 focus:outline-none transition-all shadow-sm"
+							/>
+							<button
+								type="button"
+								onClick={() => setShowApiKey((prev) => !prev)}
+								className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-500 hover:text-stone-700"
+								aria-label={showApiKey ? "隐藏 API Key" : "显示 API Key"}
+							>
+								{showApiKey ? (
+									<EyeOff className="w-4 h-4" />
+								) : (
+									<Eye className="w-4 h-4" />
+								)}
+							</button>
+						</div>
 						<p className="text-xs text-stone-500">
 							您的 API Key 将只保存在本地浏览器中，不会上传到服务器。
 						</p>
@@ -132,13 +167,29 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 						<label className="block text-sm font-medium text-stone-700">
 							GitHub Token (可选)
 						</label>
-						<input
-							type="password"
-							value={githubToken}
-							onChange={(e) => setGitHubToken(e.target.value)}
-							placeholder="ghp_xxx 或 github_pat_xxx"
-							className="w-full bg-stone-50 border border-stone-200 focus:border-stone-400 rounded-xl px-4 py-3 text-sm text-stone-900 placeholder-stone-400 focus:outline-none transition-all shadow-sm"
-						/>
+						<div className="relative">
+							<input
+								type={showGitHubToken ? "text" : "password"}
+								value={githubToken}
+								onChange={(e) => setGitHubToken(e.target.value)}
+								placeholder="ghp_xxx 或 github_pat_xxx"
+								className="w-full bg-stone-50 border border-stone-200 focus:border-stone-400 rounded-xl pl-4 pr-12 py-3 text-sm text-stone-900 placeholder-stone-400 focus:outline-none transition-all shadow-sm"
+							/>
+							<button
+								type="button"
+								onClick={() => setShowGitHubToken((prev) => !prev)}
+								className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-500 hover:text-stone-700"
+								aria-label={
+									showGitHubToken ? "隐藏 GitHub Token" : "显示 GitHub Token"
+								}
+							>
+								{showGitHubToken ? (
+									<EyeOff className="w-4 h-4" />
+								) : (
+									<Eye className="w-4 h-4" />
+								)}
+							</button>
+						</div>
 						<p className="text-xs text-stone-500">
 							用于提升 GitHub API 额度（避免 rate
 							limit），同样仅保存在本地浏览器。
@@ -258,6 +309,44 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 								</>
 							)}
 						</div>
+					</div>
+
+					<div className="space-y-3">
+						<div className="flex items-center justify-between">
+							<label className="block text-sm font-medium text-stone-700">
+								报告分析提示词
+							</label>
+							<button
+								type="button"
+								onClick={() =>
+									setCustomPrompt(DEFAULT_ANALYSIS_PROMPT_TEMPLATE)
+								}
+								className="text-xs font-medium text-stone-600 hover:text-stone-800 underline underline-offset-2"
+							>
+								重置为默认模板
+							</button>
+						</div>
+						<textarea
+							value={customPrompt}
+							onChange={(e) => setCustomPrompt(e.target.value)}
+							placeholder="可使用下方占位符动态注入仓库上下文"
+							className="w-full bg-stone-50 border border-stone-200 focus:border-stone-400 rounded-xl px-4 py-3 text-sm text-stone-900 placeholder-stone-400 focus:outline-none transition-all shadow-sm min-h-56 font-mono"
+							spellCheck={false}
+						/>
+						<div className="rounded-xl border border-stone-200 bg-stone-50 px-3 py-2">
+							<p className="text-xs font-medium text-stone-600">可用占位符</p>
+							<div className="mt-2 grid grid-cols-1 md:grid-cols-2 gap-1.5">
+								{ANALYSIS_PROMPT_PLACEHOLDERS.map((item) => (
+									<div key={item.key} className="text-xs text-stone-600">
+										<code className="font-mono text-stone-800">{item.key}</code>
+										：{item.description}
+									</div>
+								))}
+							</div>
+						</div>
+						<p className="text-xs text-stone-500">
+							保存分析时会自动替换占位符。默认已内置兜底模板；若清空此项，保存时会自动回退到默认模板。
+						</p>
 					</div>
 
 					<div className="space-y-3">
