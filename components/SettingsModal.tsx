@@ -176,7 +176,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 								type="button"
 								onClick={() => setShowGitHubToken((prev) => !prev)}
 								className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-500 hover:text-stone-700"
-								aria-label={showGitHubToken ? "隐藏 GitHub Token" : "显示 GitHub Token"}
+								aria-label={
+									showGitHubToken ? "隐藏 GitHub Token" : "显示 GitHub Token"
+								}
 							>
 								{showGitHubToken ? (
 									<EyeOff className="w-4 h-4" />

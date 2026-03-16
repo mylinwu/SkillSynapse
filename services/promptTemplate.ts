@@ -82,27 +82,41 @@ interface PromptContext {
 	context: RepoContext;
 }
 
-export const buildAnalysisPrompt = ({
+const buildPromptReplacements = ({
 	repoUrl,
 	title,
 	context,
-}: PromptContext): string => {
-	const replacements: Record<string, string> = {
-		repoFullName: `${context.info.owner}/${context.info.name}`,
-		subPathDescription: context.subPath
-			? `中的特定模块/技能 **${context.subPath}**`
-			: "",
-		repoUrl,
-		description: context.info.description || "无",
-		scopeLabel: context.subPath ? "子目录范围" : "根目录",
-		structure: context.structure,
-		readme: context.readme.substring(0, 15000),
-		packageJson: context.packageJson || "不可用",
-		title,
-	};
+}: PromptContext): Record<string, string> => ({
+	repoFullName: `${context.info.owner}/${context.info.name}`,
+	subPathDescription: context.subPath
+		? `中的特定模块/技能 **${context.subPath}**`
+		: "",
+	repoUrl,
+	description: context.info.description || "无",
+	scopeLabel: context.subPath ? "子目录范围" : "根目录",
+	structure: context.structure,
+	readme: context.readme.substring(0, 15000),
+	packageJson: context.packageJson || "不可用",
+	title,
+});
 
-	return DEFAULT_ANALYSIS_PROMPT_TEMPLATE.replaceAll(
+export const renderAnalysisPromptTemplate = ({
+	template,
+	repoUrl,
+	title,
+	context,
+}: PromptContext & { template: string }): string => {
+	const replacements = buildPromptReplacements({ repoUrl, title, context });
+
+	return template.replaceAll(
 		/{{(\w+)}}/g,
 		(_, key: string) => replacements[key] || "",
 	);
+};
+
+export const buildAnalysisPrompt = (promptContext: PromptContext): string => {
+	return renderAnalysisPromptTemplate({
+		template: DEFAULT_ANALYSIS_PROMPT_TEMPLATE,
+		...promptContext,
+	});
 };
