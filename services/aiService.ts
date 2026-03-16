@@ -1,5 +1,6 @@
 import { createOpenRouter } from "@openrouter/ai-sdk-provider";
 import { generateText } from "ai";
+import { buildAnalysisPrompt } from "./promptTemplate";
 import type { RepoContext } from "../types";
 import {
 	DEFAULT_ANALYSIS_PROMPT_TEMPLATE,
