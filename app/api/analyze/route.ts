@@ -5,7 +5,7 @@ import {
 	parseGitHubUrl,
 } from "../../../services/server/githubService";
 
-export const maxDuration = 180;
+export const maxDuration = 300;
 
 interface AnalyzePayload {
 	repoUrl?: string;
