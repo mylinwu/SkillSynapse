@@ -1,6 +1,6 @@
 "use client";
 
-import { X } from "lucide-react";
+import { LoaderCircle, X } from "lucide-react";
 import type React from "react";
 import type { DiscoveredSkill } from "../services/skillService";
 
@@ -40,21 +40,10 @@ export const SkillSelectorModal: React.FC<SkillSelectorModalProps> = ({
 				<div className="p-4 max-h-[60vh] overflow-y-auto bg-stone-50/30">
 					{isLoading ? (
 						<div className="flex flex-col items-center justify-center py-12 text-stone-500">
-							<svg
-								xmlns="http://www.w3.org/2000/svg"
+							<LoaderCircle
 								className="h-8 w-8 animate-spin text-stone-400 mb-3"
-								fill="none"
-								viewBox="0 0 24 24"
-								stroke="currentColor"
 								aria-hidden="true"
-							>
-								<path
-									strokeLinecap="round"
-									strokeLinejoin="round"
-									strokeWidth={2}
-									d="M4 4v5h.058M20 20v-5h-.058M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"
-								/>
-							</svg>
+							/>
 							<p className="text-sm font-medium">正在分析仓库结构...</p>
 							<p className="text-xs text-stone-400 mt-1">
 								这可能需要几秒钟时间

@@ -15,7 +15,7 @@ import { useHistory } from "../hooks/useHistory";
 import { useHotSkills } from "../hooks/useHotSkills";
 import { useSettings } from "../hooks/useSettings";
 import { generateSkillAnalysis } from "../services/aiService";
-import { fetchRepoContext, parseGitHubUrl } from "../services/githubService";
+import { parseGitHubUrl } from "../services/githubService";
 import {
 	type DiscoveredSkill,
 	fetchRepoSkills,
@@ -167,23 +167,15 @@ export default function Home() {
 		setIsProcessing(true);
 
 		try {
-			// 1. Fetch Repo Context (with optional skillName)
-			const context = await fetchRepoContext(
-				owner,
-				repo,
-				targetSkill,
-				settings.githubToken,
-			);
+			const markdown = await generateSkillAnalysis({
+				repoUrl: targetUrl,
+				skillName: targetSkill,
+				apiKey: settings.apiKey,
+				githubToken: settings.githubToken,
+				model: settings.model,
+				customPrompt: settings.customPrompt,
+			});
 
-			// 2. Generate Analysis with AI using settings
-			const markdown = await generateSkillAnalysis(
-				context,
-				settings.apiKey,
-				settings.model,
-				settings.customPrompt,
-			);
-
-			// 3. Update Report
 			updateReport(newId, { status: "success", markdown });
 		} catch (error) {
 			console.error(error);
