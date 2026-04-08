@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowUp } from "lucide-react";
+import { ArrowUp, RefreshCw } from "lucide-react";
 import type React from "react";
 import { AutoSizer } from "react-virtualized-auto-sizer";
 import { Grid } from "react-window";
@@ -153,21 +153,10 @@ const Dashboard: React.FC<DashboardProps> = ({
 						disabled={isLoadingSkills}
 						className="flex items-center gap-1.5 text-xs text-stone-500 hover:text-stone-800 transition-colors disabled:opacity-50 font-medium"
 					>
-						<svg
-							xmlns="http://www.w3.org/2000/svg"
+						<RefreshCw
 							className={`h-3.5 w-3.5 ${isLoadingSkills ? "animate-spin" : ""}`}
-							fill="none"
-							viewBox="0 0 24 24"
-							stroke="currentColor"
 							aria-hidden="true"
-						>
-							<path
-								strokeLinecap="round"
-								strokeLinejoin="round"
-								strokeWidth={2}
-								d="M4 4v5h.058M20 20v-5h-.058M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"
-							/>
-						</svg>
+						/>
 						换一换
 					</button>
 				</div>

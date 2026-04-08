@@ -80,9 +80,8 @@ export function useSettings() {
 			'ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"';
 
 		const initialSettings = {
-			apiKey: savedApiKey || process.env.NEXT_PUBLIC_DEFAULT_API_KEY || "",
-			githubToken:
-				savedGitHubToken || process.env.NEXT_PUBLIC_DEFAULT_GITHUB_TOKEN || "",
+			apiKey: savedApiKey || "",
+			githubToken: savedGitHubToken || "",
 			model: savedModel || defaultModel,
 			fontFamily: savedFontFamily || defaultFontFamily,
 			customCss: savedCustomCss || DEFAULT_REPORT_CUSTOM_CSS,

@@ -159,7 +159,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 							</button>
 						</div>
 						<p className="text-xs text-stone-500">
-							您的 API Key 将只保存在本地浏览器中，不会上传到服务器。
+							仅保存在本地浏览器，并通过本站后端转发请求，不会直接暴露给第三方 API。
 						</p>
 					</div>
 
@@ -192,7 +192,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 						</div>
 						<p className="text-xs text-stone-500">
 							用于提升 GitHub API 额度（避免 rate
-							limit），同样仅保存在本地浏览器。
+							limit），仅保存在本地浏览器并通过本站后端请求 GitHub。
 						</p>
 					</div>
 
